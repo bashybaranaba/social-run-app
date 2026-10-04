@@ -1,0 +1,19 @@
+{
+  "name": "social-run-app",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @runside/web",
+    "dev:mobile": "npm run start -w @runside/mobile",
+    "build:web": "npm run build -w @runside/web",
+    "typecheck": "npm run typecheck -w @runside/web && npm run typecheck -w @runside/mobile"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "react": "19.2.3"
+  }
+}
