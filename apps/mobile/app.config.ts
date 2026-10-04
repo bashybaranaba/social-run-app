@@ -21,6 +21,6 @@ const config: ExpoConfig = {
     "@react-native-community/datetimepicker",
     "expo-secure-store"
   ],
-  extra: { apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000" }
+  extra: { apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://runside-sigma.vercel.app" }
 };
 export default config;
