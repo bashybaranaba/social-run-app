@@ -1,4 +1,4 @@
-const apkUrl = process.env.NEXT_PUBLIC_APK_URL;
+const apkUrl = process.env.NEXT_PUBLIC_APK_URL || "https://github.com/bashybaranaba/social-run-app/releases/latest/download/RunSide-Android.apk";
 
 function Icon({ name, size = 20 }: { name: "arrow" | "pin" | "shoe" | "chat" | "check" | "spark"; size?: number }) {
   const paths = {
