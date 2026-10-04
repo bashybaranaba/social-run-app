@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 
 const port = 3178;
 const base = `http://127.0.0.1:${port}`;
-const server = spawn("npm", ["run", "start", "-w", "@runside/web", "--", "--hostname", "127.0.0.1", "--port", String(port)], {
-  cwd: new URL("../", import.meta.url), env: process.env, stdio: "pipe"
+const require = createRequire(new URL("../apps/web/package.json", import.meta.url));
+const server = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "start", "--hostname", "127.0.0.1", "--port", String(port)], {
+  cwd: new URL("../apps/web/", import.meta.url), env: process.env, stdio: "pipe"
 });
 let logs = "";
 server.stdout.on("data", chunk => { logs += chunk.toString(); });
