@@ -9,5 +9,6 @@ build/
 !.env.*.example
 .vercel/
 *.apk
+*.idsig
 *.tsbuildinfo
 .DS_Store
