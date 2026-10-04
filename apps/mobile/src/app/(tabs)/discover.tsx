@@ -1,13 +1,12 @@
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import * as Location from "expo-location";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { api, type Run } from "../../lib/api";
+import { nairobi, optionalCurrentLocation } from "../../lib/location";
 import { useSession } from "../../lib/session";
 import { colors, Empty, RunCard, Title } from "../../components/ui";
 
-const nairobi = { latitude: -1.2864, longitude: 36.8172 };
 export default function Discover() {
   const { token, user } = useSession();
   const [coords, setCoords] = useState(nairobi);
@@ -18,14 +17,11 @@ export default function Discover() {
   const load = useCallback(async () => {
     if (!token) return;
     setLoading(true);
-    let point = nairobi;
+    const current = await optionalCurrentLocation();
+    const point = current ?? nairobi;
+    setCoords(point);
+    setLocationNote(current ? "Near you · within 25 km" : "Near Nairobi · location unavailable");
     try {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status === "granted") {
-        const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        point = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-        setCoords(point); setLocationNote("Near you · within 25 km");
-      } else setLocationNote("Near Nairobi · enable location for nearby runs");
       const result = await api<{ runs: Run[] }>(`/runs?lat=${point.latitude}&lng=${point.longitude}`, token);
       setRuns(result.runs);
     } catch (cause) { Alert.alert("Could not load runs", cause instanceof Error ? cause.message : "Try again"); }
