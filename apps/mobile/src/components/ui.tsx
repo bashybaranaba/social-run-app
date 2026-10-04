@@ -15,8 +15,8 @@ export function Button({ children, onPress, secondary, disabled, loading }: { ch
     {loading ? <ActivityIndicator color={secondary ? colors.green : "white"}/> : <Text style={[styles.buttonText, secondary && { color: colors.green }]}>{children}</Text>}
   </Pressable>;
 }
-export function Field({ label, ...props }: TextInputProps & { label: string }) {
-  return <View style={{ marginBottom: 15 }}><Text style={styles.label}>{label}</Text><TextInput placeholderTextColor="#A1AEA2" style={styles.input} {...props}/></View>;
+export function Field({ label, style, ...props }: TextInputProps & { label: string }) {
+  return <View style={{ marginBottom: 15 }}><Text style={styles.label}>{label}</Text><TextInput placeholderTextColor="#A1AEA2" style={[styles.input, style]} {...props}/></View>;
 }
 export function RunCard({ run, onPress }: { run: Run; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.runCard}>

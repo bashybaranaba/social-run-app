@@ -5,7 +5,8 @@ let clientPromise: Promise<MongoClient> | undefined;
 
 export async function db(): Promise<Db> {
   if (!uri) throw new Error("MONGODB_URI is not configured");
-  clientPromise ??= new MongoClient(uri, { maxPoolSize: 10 }).connect();
+  clientPromise ??= new MongoClient(uri, { maxPoolSize: 10, serverSelectionTimeoutMS: 8000 })
+    .connect().catch(cause => { clientPromise = undefined; throw cause; });
   return (await clientPromise).db(process.env.MONGODB_DB || "runside");
 }
 
