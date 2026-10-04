@@ -62,6 +62,6 @@ export default function Home() {
 
     <section id="download" className="download section wrap"><div className="download-decoration">↗</div><span className="section-kicker">03 / YOUR NEXT STEP</span><h2>Go further.<br/><em>Go together.</em></h2><p>Your next running partner could be a few streets away. Start with one run.</p><DownloadButton className="button-light"/><small>{apkUrl ? "Android APK · Free to download" : "Android launch coming soon"}</small></section>
 
-    <footer className="footer wrap"><a href="#top" className="brand"><span className="brand-mark">R<span>.</span></span><span>runside</span></a><span>Better runs, better company. Made for runners everywhere.</span><a href="mailto:hello@runside.app">Say hello ↗</a></footer>
+    <footer className="footer wrap"><a href="#top" className="brand"><span className="brand-mark">R<span>.</span></span><span>runside</span></a><span>Better runs, better company. Made for runners everywhere.</span><a href="https://github.com/bashybaranaba/social-run-app/issues/new" target="_blank" rel="noreferrer">Share feedback ↗</a></footer>
   </main>;
 }
