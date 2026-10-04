@@ -1,0 +1,30 @@
+name: Build and Test
+on:
+  pull_request:
+  push:
+    branches: [staging, main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017
+      MONGODB_DB: runside_ci
+      JWT_SECRET: ci-secret-that-is-at-least-thirty-two-characters-long
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build:web
+      - run: node scripts/smoke.mjs
+      - run: cd apps/mobile && npx expo lint && npx expo-doctor
