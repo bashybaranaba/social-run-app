@@ -14,6 +14,7 @@ export async function ensureIndexes() {
   const database = await db();
   await Promise.all([
     database.collection("users").createIndex({ email: 1 }, { unique: true }),
+    database.collection("users").createIndex({ googleSub: 1 }, { unique: true, partialFilterExpression: { googleSub: { $type: "string" } } }),
     database.collection("runs").createIndex({ location: "2dsphere", startAt: 1 }),
     database.collection("requests").createIndex({ runId: 1, userId: 1 }, { unique: true }),
     database.collection("requests").createIndex({ userId: 1, status: 1 }),

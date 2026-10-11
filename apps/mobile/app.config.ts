@@ -4,13 +4,13 @@ const config: ExpoConfig = {
   name: "RunSide",
   slug: "runside",
   scheme: "runside",
-  version: "1.0.2",
+  version: "1.0.3",
   orientation: "portrait",
   userInterfaceStyle: "light",
   icon: "./assets/icon.png",
   android: {
     package: "io.runside.app",
-    versionCode: 3,
+    versionCode: 4,
     permissions: ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
     adaptiveIcon: { foregroundImage: "./assets/android-icon-foreground.png", backgroundColor: "#214D3D" }
   },
@@ -19,8 +19,15 @@ const config: ExpoConfig = {
     ["expo-location", { locationWhenInUsePermission: "RunSide uses your location to find runs near you." }],
     ["react-native-maps", { androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY || "" }],
     "@react-native-community/datetimepicker",
+    ...(process.env.GOOGLE_IOS_URL_SCHEME
+      ? [["react-native-nitro-google-signin", { iosUrlScheme: process.env.GOOGLE_IOS_URL_SCHEME }] as [string, { iosUrlScheme: string }]]
+      : []),
+    "expo-dev-client",
     "expo-secure-store"
   ],
-  extra: { apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://runside-sigma.vercel.app" }
+  extra: {
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://runside-sigma.vercel.app",
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || ""
+  }
 };
 export default config;

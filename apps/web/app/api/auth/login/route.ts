@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const input = login.parse(await request.json());
     const user = await (await db()).collection("users").findOne({ email: input.email });
-    if (!user || !await bcrypt.compare(input.password, user.passwordHash))
+    if (!user || typeof user.passwordHash !== "string" || !await bcrypt.compare(input.password, user.passwordHash))
       return error("Invalid email or password", 401);
     return NextResponse.json({ token: await tokenFor(user._id.toString()),
       user: { id: user._id.toString(), name: user.name, email: user.email } });
