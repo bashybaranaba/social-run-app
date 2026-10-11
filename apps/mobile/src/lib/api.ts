@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 
 const baseUrl = (Constants.expoConfig?.extra?.apiUrl as string | undefined)?.replace(/\/$/, "") || "http://localhost:3000";
 
-export type User = { id: string; name: string; email: string };
+export type User = { id: string; name: string; email: string; googleLinked?: boolean };
 export type Run = {
   id: string; hostId: string; hostName: string; title: string; description: string;
   startAt: string; distanceKm: number; paceMin: number; latitude: number; longitude: number;
