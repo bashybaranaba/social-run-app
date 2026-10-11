@@ -4,6 +4,7 @@ import { Redirect, router } from "expo-router";
 import { Button, colors, Field, Page } from "../components/ui";
 import { useSession } from "../lib/session";
 import { googleIdToken, googleSignInAvailable } from "../lib/google";
+import { GoogleSignInButton } from "react-native-nitro-google-signin";
 
 export default function Auth() {
   const { token, signIn, signUp, signInWithGoogle } = useSession();
@@ -55,11 +56,8 @@ export default function Auth() {
         <Button onPress={submit} loading={busy}>{mode === "register" ? "Create account" : "Sign in"}</Button>
         {googleSignInAvailable && <>
           <Text style={{ color: colors.muted, textAlign: "center", marginVertical: 16 }}>or</Text>
-          <Pressable disabled={busy} onPress={submitGoogle} accessibilityRole="button" accessibilityLabel="Continue with Google"
-            style={{ borderColor: colors.border, borderWidth: 1, borderRadius: 14, paddingVertical: 15, flexDirection: "row", alignItems: "center", justifyContent: "center", opacity: busy ? 0.5 : 1 }}>
-            <Text style={{ fontWeight: "900", fontSize: 20, color: "#4285F4", marginRight: 11 }}>G</Text>
-            <Text style={{ fontWeight: "700", color: colors.ink, fontSize: 16 }}>Continue with Google</Text>
-          </Pressable>
+          <GoogleSignInButton signInBehavior="none" size="standard" colorScheme="light" disabled={busy}
+            onPress={submitGoogle} accessibilityLabel="Continue with Google" style={{ alignSelf: "center" }}/>
         </>}
         <Pressable onPress={() => setMode(mode === "register" ? "login" : "register")} style={{ paddingTop: 21, alignItems: "center" }}><Text style={{ color: colors.green, fontWeight: "700" }}>{mode === "register" ? "Already have an account? Sign in" : "New here? Create an account"}</Text></Pressable>
       </View>
