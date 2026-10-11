@@ -1,13 +1,13 @@
-import { ReactNode } from "react";
+import { ReactNode, type RefObject } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formatPace, formatWhen, type Run } from "../lib/api";
 
 export const colors = { ink: "#19382D", green: "#214D3D", lime: "#D8F370", cream: "#F7F8F2", muted: "#74867A", border: "#E3E9E1", white: "#FFFFFF", orange: "#ED9B69" };
-export function Page({ children, scroll = true, safeTop = true, safeBottom = true }: { children: ReactNode; scroll?: boolean; safeTop?: boolean; safeBottom?: boolean }) {
+export function Page({ children, scroll = true, safeTop = true, safeBottom = true, scrollRef }: { children: ReactNode; scroll?: boolean; safeTop?: boolean; safeBottom?: boolean; scrollRef?: RefObject<ScrollView | null> }) {
   const insets = useSafeAreaInsets();
   const contentStyle = [styles.pageContent, { paddingTop: 22 + (safeTop ? insets.top : 0), paddingBottom: 42 + (safeBottom ? insets.bottom : 0) }];
-  return scroll ? <ScrollView style={styles.page} contentContainerStyle={contentStyle} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+  return scroll ? <ScrollView ref={scrollRef} style={styles.page} contentContainerStyle={contentStyle} keyboardShouldPersistTaps="handled">{children}</ScrollView>
     : <View style={[styles.page, contentStyle]}>{children}</View>;
 }
 export function Title({ eyebrow, children, subtitle }: { eyebrow?: string; children: ReactNode; subtitle?: string }) {
