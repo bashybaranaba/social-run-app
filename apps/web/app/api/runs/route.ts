@@ -3,11 +3,11 @@ import { ObjectId } from "mongodb";
 import { db, ensureIndexes } from "@/lib/db";
 import { userIdFrom } from "@/lib/auth";
 import { error, handleError } from "@/lib/http";
-import { publicRun, runInput, type Run } from "@/lib/models";
+import { publicRun, runInput, type JoinRequest, type Run } from "@/lib/models";
 
-async function withHost(run: Run, viewerId: ObjectId | null) {
+async function withHost(run: Run, viewerId: ObjectId | null, myRequestStatus?: JoinRequest["status"]) {
   const host = await (await db()).collection("users").findOne({ _id: run.hostId }, { projection: { name: 1 } });
-  return { ...publicRun(run, viewerId), hostName: host?.name || "Runner" };
+  return { ...publicRun(run, viewerId), hostName: host?.name || "Runner", myRequestStatus };
 }
 
 export async function GET(request: NextRequest) {
@@ -17,9 +17,13 @@ export async function GET(request: NextRequest) {
     const database = await db();
     const params = request.nextUrl.searchParams;
     const mine = params.get("mine") === "true";
+    const myRequests = mine ? await database.collection<JoinRequest>("requests")
+      .find({ userId, status: { $in: ["pending", "accepted"] } }).toArray() : [];
+    const requestStatusByRun = new Map(myRequests.map(join => [join.runId.toString(), join.status]));
     let query: Record<string, unknown>;
     if (mine) {
-      query = { $or: [{ hostId: userId }, { acceptedUserId: userId }], startAt: { $gte: new Date(Date.now() - 86400000) } };
+      query = { $or: [{ hostId: userId }, { acceptedUserId: userId }, { _id: { $in: myRequests.map(join => join.runId) } }],
+        startAt: { $gte: new Date(Date.now() - 86400000) } };
     } else {
       const lat = Number(params.get("lat") ?? -1.2864);
       const lng = Number(params.get("lng") ?? 36.8172);
@@ -31,7 +35,7 @@ export async function GET(request: NextRequest) {
     await ensureIndexes();
     const runs = await database.collection<Run>("runs").find(query).limit(60).toArray();
     if (mine) runs.sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-    return NextResponse.json({ runs: await Promise.all(runs.map(run => withHost(run, userId))) });
+    return NextResponse.json({ runs: await Promise.all(runs.map(run => withHost(run, userId, requestStatusByRun.get(run._id!.toString())))) });
   } catch (cause) { return handleError(cause); }
 }
 

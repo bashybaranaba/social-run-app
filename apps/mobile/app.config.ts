@@ -4,13 +4,13 @@ const config: ExpoConfig = {
   name: "RunSide",
   slug: "runside",
   scheme: "runside",
-  version: "1.0.1",
+  version: "1.0.2",
   orientation: "portrait",
   userInterfaceStyle: "light",
   icon: "./assets/icon.png",
   android: {
     package: "io.runside.app",
-    versionCode: 2,
+    versionCode: 3,
     permissions: ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
     adaptiveIcon: { foregroundImage: "./assets/android-icon-foreground.png", backgroundColor: "#214D3D" }
   },

@@ -16,6 +16,7 @@ export async function ensureIndexes() {
     database.collection("users").createIndex({ email: 1 }, { unique: true }),
     database.collection("runs").createIndex({ location: "2dsphere", startAt: 1 }),
     database.collection("requests").createIndex({ runId: 1, userId: 1 }, { unique: true }),
+    database.collection("requests").createIndex({ userId: 1, status: 1 }),
     database.collection("messages").createIndex({ runId: 1, createdAt: 1 })
   ]);
 }

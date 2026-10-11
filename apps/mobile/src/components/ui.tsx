@@ -1,11 +1,14 @@
 import { ReactNode } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formatPace, formatWhen, type Run } from "../lib/api";
 
 export const colors = { ink: "#19382D", green: "#214D3D", lime: "#D8F370", cream: "#F7F8F2", muted: "#74867A", border: "#E3E9E1", white: "#FFFFFF", orange: "#ED9B69" };
-export function Page({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
-  return scroll ? <ScrollView style={styles.page} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">{children}</ScrollView>
-    : <View style={[styles.page, styles.pageContent]}>{children}</View>;
+export function Page({ children, scroll = true, safeTop = true, safeBottom = true }: { children: ReactNode; scroll?: boolean; safeTop?: boolean; safeBottom?: boolean }) {
+  const insets = useSafeAreaInsets();
+  const contentStyle = [styles.pageContent, { paddingTop: 22 + (safeTop ? insets.top : 0), paddingBottom: 42 + (safeBottom ? insets.bottom : 0) }];
+  return scroll ? <ScrollView style={styles.page} contentContainerStyle={contentStyle} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+    : <View style={[styles.page, contentStyle]}>{children}</View>;
 }
 export function Title({ eyebrow, children, subtitle }: { eyebrow?: string; children: ReactNode; subtitle?: string }) {
   return <View style={{ marginBottom: 23 }}>{eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}<Text style={styles.title}>{children}</Text>{subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}</View>;
@@ -19,12 +22,14 @@ export function Field({ label, style, ...props }: TextInputProps & { label: stri
   return <View style={{ marginBottom: 15 }}><Text style={styles.label}>{label}</Text><TextInput placeholderTextColor="#A1AEA2" style={[styles.input, style]} {...props}/></View>;
 }
 export function RunCard({ run, onPress }: { run: Run; onPress: () => void }) {
+  const statusLabel = run.myRequestStatus === "pending" ? "REQUEST SENT" : run.status === "matched" ? "MATCHED" : "OPEN RUN";
   return <Pressable onPress={onPress} style={styles.runCard}>
-    <View style={styles.cardTop}><Text style={styles.pill}>{run.status === "open" ? "OPEN RUN" : "MATCHED"}</Text><Text style={styles.cardPlace}>⌖ {run.placeName}</Text></View>
+    <View style={styles.cardTop}><Text style={styles.pill}>{statusLabel}</Text><Text style={styles.cardPlace}>⌖ {run.placeName}</Text></View>
     <Text style={styles.cardTitle}>{run.title}</Text>
     <Text style={styles.cardMeta}>◷  {formatWhen(run.startAt)}</Text>
     <Text style={styles.cardMeta}>↗  {run.distanceKm} km  ·  {formatPace(run.paceMin)} /km</Text>
     <View style={styles.cardBottom}><View style={styles.avatar}><Text style={styles.avatarText}>{run.hostName.charAt(0).toUpperCase()}</Text></View><Text style={styles.host}>Hosted by {run.hostName}</Text><Text style={styles.cardArrow}>→</Text></View>
+    {run.myRequestStatus === "pending" && <Text style={{ color: colors.muted, fontSize: 12, marginTop: 10 }}>Waiting for the host to respond</Text>}
   </Pressable>;
 }
 export function Empty({ icon, title, text }: { icon: string; title: string; text: string }) {
