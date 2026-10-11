@@ -3,9 +3,11 @@ import { Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView,
 import { Redirect, router } from "expo-router";
 import { Button, colors, Field, Page } from "../components/ui";
 import { useSession } from "../lib/session";
+import { googleIdToken, googleSignInAvailable } from "../lib/google";
+import { GoogleSignInButton } from "react-native-nitro-google-signin";
 
 export default function Auth() {
-  const { token, signIn, signUp } = useSession();
+  const { token, signIn, signUp, signInWithGoogle } = useSession();
   const [mode, setMode] = useState<"login" | "register">("register");
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,6 +34,16 @@ export default function Auth() {
     } catch (cause) { Alert.alert("Could not continue", cause instanceof Error ? cause.message : "Please try again"); }
     finally { setBusy(false); }
   }
+  async function submitGoogle() {
+    setBusy(true);
+    try {
+      const idToken = await googleIdToken();
+      if (!idToken) return;
+      await signInWithGoogle(idToken);
+      router.replace("/(tabs)");
+    } catch (cause) { Alert.alert("Google sign-in failed", cause instanceof Error ? cause.message : "Please try again"); }
+    finally { setBusy(false); }
+  }
   return <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.cream }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
     <Page scrollRef={pageRef}><View style={{ marginTop: 46, marginBottom: 45 }}><View style={{ backgroundColor: colors.green, width: 63, height: 63, borderRadius: 18, alignItems: "center", justifyContent: "center" }}><Text style={{ color: colors.lime, fontSize: 35, fontWeight: "900" }}>R.</Text></View>
       <Text style={{ color: colors.ink, fontSize: 45, fontWeight: "900", letterSpacing: -2.5, lineHeight: 48, marginTop: 35 }}>Better runs,{"\n"}better company.</Text>
@@ -42,6 +54,11 @@ export default function Auth() {
         <Field label="Email" value={email} onChangeText={setEmail} onFocus={showFieldsAboveKeyboard} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" placeholder="you@example.com"/>
         <Field label="Password" value={password} onChangeText={setPassword} onFocus={showFieldsAboveKeyboard} secureTextEntry placeholder="At least 8 characters"/>
         <Button onPress={submit} loading={busy}>{mode === "register" ? "Create account" : "Sign in"}</Button>
+        {googleSignInAvailable && <>
+          <Text style={{ color: colors.muted, textAlign: "center", marginVertical: 16 }}>or</Text>
+          <GoogleSignInButton signInBehavior="none" size="standard" colorScheme="light" disabled={busy}
+            onPress={submitGoogle} accessibilityLabel="Continue with Google" style={{ alignSelf: "center" }}/>
+        </>}
         <Pressable onPress={() => setMode(mode === "register" ? "login" : "register")} style={{ paddingTop: 21, alignItems: "center" }}><Text style={{ color: colors.green, fontWeight: "700" }}>{mode === "register" ? "Already have an account? Sign in" : "New here? Create an account"}</Text></Pressable>
       </View>
       <Text style={{ color: colors.muted, textAlign: "center", fontSize: 12, lineHeight: 18, marginTop: 20 }}>Plan a run. Find your person. Get outside.</Text>

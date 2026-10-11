@@ -5,6 +5,8 @@ import { api, type User } from "./api";
 type Session = { token: string | null; user: User | null; loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
+  linkGoogle: (idToken: string) => Promise<void>;
   signOut: () => Promise<void> };
 const Context = createContext<Session | null>(null);
 const key = "runside-token";
@@ -21,14 +23,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
     if (active) setLoading(false);
   })(); return () => { active = false; }; }, []);
-  async function authenticate(path: string, body: object) {
-    const result = await api<{ token: string; user: User }>(path, null, { method: "POST", body: JSON.stringify(body) });
+  async function authenticate(path: string, body: object, bearer?: string | null) {
+    const result = await api<{ token: string; user: User }>(path, bearer, { method: "POST", body: JSON.stringify(body) });
     await SecureStore.setItemAsync(key, result.token);
     setToken(result.token); setUser(result.user);
   }
   const value = useMemo<Session>(() => ({ token, user, loading,
     signIn: (email, password) => authenticate("/auth/login", { email, password }),
     signUp: (name, email, password) => authenticate("/auth/register", { name, email, password }),
+    signInWithGoogle: idToken => authenticate("/auth/google", { idToken }),
+    linkGoogle: idToken => authenticate("/auth/google", { idToken }, token),
     signOut: async () => { await SecureStore.deleteItemAsync(key); setToken(null); setUser(null); }
   }), [token, user, loading]);
   return <Context.Provider value={value}>{children}</Context.Provider>;

@@ -2,12 +2,15 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { MongoClient } from "mongodb";
 
 const port = 3178;
 const base = `http://127.0.0.1:${port}`;
 const require = createRequire(new URL("../apps/web/package.json", import.meta.url));
 const server = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "start", "--hostname", "127.0.0.1", "--port", String(port)], {
-  cwd: new URL("../apps/web/", import.meta.url), env: process.env, stdio: "pipe"
+  cwd: new URL("../apps/web/", import.meta.url),
+  env: { ...process.env, GOOGLE_WEB_CLIENT_ID: process.env.GOOGLE_WEB_CLIENT_ID || "test-client.apps.googleusercontent.com" },
+  stdio: "pipe"
 });
 let logs = "";
 server.stdout.on("data", chunk => { logs += chunk.toString(); });
@@ -35,6 +38,17 @@ try {
   const host = await register("Host"); const guest = await register("Guest");
   assert.equal(host.status, 201, JSON.stringify(host.data));
   assert.equal(guest.status, 201, JSON.stringify(guest.data));
+  const invalidGoogle = await call("/auth/google", null, "POST", { idToken: "invalid-google-token-that-is-not-signed" });
+  assert.equal(invalidGoogle.status, 401, "Google sign-in must reject unverified tokens");
+  const googleEmail = `google-${suffix}@example.test`;
+  const mongo = await new MongoClient(process.env.MONGODB_URI).connect();
+  try {
+    await mongo.db(process.env.MONGODB_DB || "runside").collection("users").insertOne({
+      name: "Google Runner", email: googleEmail, googleSub: `test-${suffix}`, createdAt: new Date()
+    });
+  } finally { await mongo.close(); }
+  const passwordOnGoogleAccount = await call("/auth/login", null, "POST", { email: googleEmail, password: "test-password-123" });
+  assert.equal(passwordOnGoogleAccount.status, 401, "Google-only accounts must reject password sign-in");
   const hostToken = host.data.token; const guestToken = guest.data.token;
   const posted = await call("/runs", hostToken, "POST", {
     title: "Karura morning 5K", description: "Easy pace", startAt: new Date(Date.now() + 86400000).toISOString(),
