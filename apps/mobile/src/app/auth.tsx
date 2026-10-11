@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { Button, colors, Field, Page } from "../components/ui";
 import { useSession } from "../lib/session";
@@ -10,7 +10,18 @@ export default function Auth() {
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const pageRef = useRef<ScrollView>(null);
-  const showFieldsAboveKeyboard = () => setTimeout(() => pageRef.current?.scrollToEnd({ animated: true }), 300);
+  const scrollForField = useRef(false);
+  useEffect(() => {
+    const shown = Keyboard.addListener("keyboardDidShow", () => {
+      if (scrollForField.current) requestAnimationFrame(() => pageRef.current?.scrollToEnd({ animated: true }));
+    });
+    const hidden = Keyboard.addListener("keyboardDidHide", () => { scrollForField.current = false; });
+    return () => { shown.remove(); hidden.remove(); };
+  }, []);
+  const showFieldsAboveKeyboard = () => {
+    scrollForField.current = true;
+    if (Keyboard.isVisible()) requestAnimationFrame(() => pageRef.current?.scrollToEnd({ animated: true }));
+  };
   if (token) return <Redirect href="/(tabs)"/>;
   async function submit() {
     setBusy(true);
@@ -27,7 +38,7 @@ export default function Auth() {
       <Text style={{ color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: 12 }}>Find a running partner at your pace, right around the corner.</Text></View>
       <View style={{ backgroundColor: "white", borderRadius: 22, padding: 22, borderWidth: 1, borderColor: colors.border }}>
         <Text style={{ color: colors.ink, fontSize: 22, fontWeight: "800", marginBottom: 20 }}>{mode === "register" ? "Create your account" : "Welcome back"}</Text>
-        {mode === "register" && <Field label="Your name" value={name} onChangeText={setName} autoCapitalize="words" placeholder="Alex Runner"/>}
+        {mode === "register" && <Field label="Your name" value={name} onChangeText={setName} onFocus={() => { scrollForField.current = false; }} autoCapitalize="words" placeholder="Alex Runner"/>}
         <Field label="Email" value={email} onChangeText={setEmail} onFocus={showFieldsAboveKeyboard} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" placeholder="you@example.com"/>
         <Field label="Password" value={password} onChangeText={setPassword} onFocus={showFieldsAboveKeyboard} secureTextEntry placeholder="At least 8 characters"/>
         <Button onPress={submit} loading={busy}>{mode === "register" ? "Create account" : "Sign in"}</Button>
