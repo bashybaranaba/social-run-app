@@ -8,6 +8,7 @@ export type Run = {
   startAt: string; distanceKm: number; paceMin: number; latitude: number; longitude: number;
   placeName: string; status: "open" | "matched" | "completed" | "cancelled";
   acceptedUserId?: string;
+  myRequestStatus?: "pending" | "accepted" | "declined";
 };
 export type JoinRequest = { id: string; userId: string; userName: string; status: string; createdAt: string };
 export type RunDetail = { run: Run; myRequestStatus: string | null; requests: JoinRequest[] };
