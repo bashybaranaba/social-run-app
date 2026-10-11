@@ -49,9 +49,16 @@ try {
   assert.equal(detailBefore.data.run.latitude, -1.25, "Public coordinates should be rounded");
   assert.equal((await call(`/runs/${id}/messages`, guestToken)).status, 403);
   assert.equal((await call(`/runs/${id}/requests`, guestToken, "POST")).status, 200);
+  const pendingRuns = await call("/runs?mine=true", guestToken);
+  assert.equal(pendingRuns.status, 200);
+  assert.equal(pendingRuns.data.runs.find(run => run.id === id)?.myRequestStatus, "pending",
+    "Requested runs should remain visible in My runs");
   const hostDetail = await call(`/runs/${id}`, hostToken);
   assert.equal(hostDetail.data.requests.length, 1);
   assert.equal((await call(`/runs/${id}/requests/${hostDetail.data.requests[0].id}`, hostToken, "PATCH", { status: "accepted" })).status, 200);
+  const matchedRuns = await call("/runs?mine=true", guestToken);
+  assert.equal(matchedRuns.data.runs.find(run => run.id === id)?.status, "matched",
+    "Accepted runs should remain visible in My runs");
   const message = await call(`/runs/${id}/messages`, guestToken, "POST", { text: "See you at the gate!" });
   assert.equal(message.status, 201, JSON.stringify(message.data));
   const inbox = await call(`/runs/${id}/messages`, hostToken);

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api, type Run } from "../../lib/api";
 import { nairobi, optionalCurrentLocation } from "../../lib/location";
 import { useSession } from "../../lib/session";
@@ -9,6 +10,7 @@ import { colors, Empty, RunCard, Title } from "../../components/ui";
 
 export default function Discover() {
   const { token, user } = useSession();
+  const insets = useSafeAreaInsets();
   const [coords, setCoords] = useState(nairobi);
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function Discover() {
   }, [token]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   return <View style={{ flex: 1, backgroundColor: colors.cream }}>
-    <View style={{ paddingHorizontal: 22, paddingTop: 18 }}><Title eyebrow={`GOOD TO SEE YOU, ${user?.name.split(" ")[0].toUpperCase() || "RUNNER"}`} subtitle="Find a run that feels right for you.">Let&apos;s go run.</Title>
+    <View style={{ paddingHorizontal: 22, paddingTop: 18 + insets.top }}><Title eyebrow={`GOOD TO SEE YOU, ${user?.name.split(" ")[0].toUpperCase() || "RUNNER"}`} subtitle="Find a run that feels right for you.">Let&apos;s go run.</Title>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 17 }}><Text style={{ color: colors.muted, fontSize: 13 }}>⌖  {locationNote}</Text>
         <View style={{ flexDirection: "row", backgroundColor: "#E8EEE7", padding: 3, borderRadius: 20 }}>
           {(["list", "map"] as const).map(item => <Pressable key={item} onPress={() => setView(item)} style={{ backgroundColor: view === item ? "white" : "transparent", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 18 }}><Text style={{ color: colors.green, fontSize: 12, fontWeight: "800" }}>{item === "list" ? "List" : "Map"}</Text></Pressable>)}
@@ -41,6 +43,7 @@ export default function Discover() {
         <Text style={{ color: colors.ink, fontSize: 19, fontWeight: "800", marginBottom: 14 }}>Runs near you</Text>
         {loading && !runs.length ? <ActivityIndicator color={colors.green} style={{ marginTop: 30 }}/> : runs.length ? runs.map(run => <RunCard key={run.id} run={run} onPress={() => router.push(`/run/${run.id}`)}/>)
           : <Empty icon="↗" title="The first run starts with you" text="No open runs nearby yet. Plan one and invite someone to join."/>}
+        <Pressable onPress={() => router.push("/(tabs)/mine")} style={{ paddingVertical: 20, alignItems: "center" }}><Text style={{ color: colors.green, fontWeight: "800" }}>Requested or matched? Find your run in My runs  →</Text></Pressable>
       </ScrollView>}
   </View>;
 }
